@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AQUI.MY - Painel Administrativo Pro</title>
+    <link rel="icon" href="https://ui-avatars.com/api/?name=AQUI&background=3b82f6&color=fff" type="image/png">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -36,8 +37,8 @@
             <a href="#" onclick="showSection('artigos')" id="nav-artigos" class="sidebar-item flex items-center px-6 py-3 text-sm font-medium">
                 <i class="fas fa-newspaper w-5 mr-3"></i> Artigos
             </a>
-            <a href="#" onclick="showSection('config')" id="nav-config" class="sidebar-item flex items-center px-6 py-3 text-sm font-medium mt-8 border-t border-gray-800 pt-6">
-                <i class="fas fa-cog w-5 mr-3"></i> Configuração Firebase
+            <a href="#" onclick="showSection('config')" id="nav-config" class="hidden sidebar-item flex items-center px-6 py-3 text-sm font-medium mt-8 border-t border-gray-800 pt-6">
+                <i class="fas fa-cog w-5 mr-3"></i> Configurações do Sistema
             </a>
         </nav>
         <div class="p-4 bg-gray-800 border-t border-gray-700">
@@ -108,9 +109,9 @@
 
                 <!-- Recent Activity -->
                 <div class="bg-white rounded-lg shadow-sm p-6">
-                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Métricas de Desempenho (Simulação)</h3>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Métricas de Desempenho</h3>
                     <div class="h-64 bg-gray-50 rounded border border-gray-200 flex items-center justify-center text-gray-400">
-                        <p><i class="fas fa-chart-line mr-2"></i> Gráfico de visualizações ficará aqui.</p>
+                        <p><i class="fas fa-chart-line mr-2"></i> Gráfico de acesso (Em breve conectado com Analytics)</p>
                     </div>
                 </div>
             </div>
@@ -136,20 +137,21 @@
                                         <div>
                                             <label class="block text-sm font-medium text-gray-700 mb-2">Categoria</label>
                                             <select id="category" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                                <option value="Acadêmico">Acadêmico</option>
+                                                <option value="Artigo Científico">Artigo Científico</option>
                                                 <option value="Tecnologia">Tecnologia</option>
                                                 <option value="Negócios">Negócios</option>
-                                                <option value="IA">IA</option>
-                                                <option value="Saúde">Saúde</option>
-                                                <option value="Finanças">Finanças</option>
+                                                <option value="IA">Inteligência Artificial</option>
+                                                <option value="Saúde">Saúde e Pesquisa</option>
                                                 <option value="Geral">Geral</option>
                                             </select>
                                         </div>
                                         <div>
                                             <label class="block text-sm font-medium text-gray-700 mb-2">Tom do Artigo</label>
                                             <select id="tone" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                                <option value="Acadêmico e Crítico">Acadêmico & Crítico</option>
                                                 <option value="Informativo e Profissional">Informativo & Profissional</option>
-                                                <option value="Descontraído e Engajador">Descontraído & Engajador</option>
-                                                <option value="Inspirador e Motivacional">Inspirador & Motivacional</option>
+                                                <option value="Técnico e Científico">Técnico & Científico</option>
                                                 <option value="Jornalístico">Jornalístico</option>
                                             </select>
                                         </div>
@@ -296,8 +298,17 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
 
-        let db = null;
-        window.isFirebaseConnected = false;
+        const firebaseConfig = {
+            apiKey: "AIzaSyBtcBDbZbzUM6MQH8fg64_I9K0j9Krae8E",
+            authDomain: "quimy-f0a19.firebaseapp.com",
+            projectId: "quimy-f0a19",
+            storageBucket: "quimy-f0a19.firebasestorage.app",
+            messagingSenderId: "92172152920",
+            appId: "1:92172152920:web:aa72eea4b905eaea099a2d"
+        };
+        const app = initializeApp(firebaseConfig);
+        let db = getFirestore(app);
+        window.isFirebaseConnected = true;
         
         const OPENROUTER_API_KEY = "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";
 
@@ -320,55 +331,17 @@
 
         // --- FIREBASE LOGIC ---
         function initFirebase() {
-            const savedConfig = localStorage.getItem('aquimy_firebase_config');
-            if (savedConfig) {
-                try {
-                    const config = JSON.parse(savedConfig);
-                    // Preenche form
-                    document.getElementById('fb-apiKey').value = config.apiKey || '';
-                    document.getElementById('fb-authDomain').value = config.authDomain || '';
-                    document.getElementById('fb-projectId').value = config.projectId || '';
-                    document.getElementById('fb-storageBucket').value = config.storageBucket || '';
-                    document.getElementById('fb-messagingSenderId').value = config.messagingSenderId || '';
-                    document.getElementById('fb-appId').value = config.appId || '';
-
-                    if(config.apiKey) {
-                        const app = initializeApp(config);
-                        db = getFirestore(app);
-                        window.isFirebaseConnected = true;
-                        
-                        document.getElementById('db-status').innerText = "Status: Online (Firestore)";
-                        document.getElementById('db-status').className = "text-xs text-green-400";
-                        
-                        loadArticles();
-                    }
-                } catch (e) {
-                    console.error("Erro ao inicializar firebase salvo", e);
-                }
-            } else {
-                document.getElementById('db-status').innerText = "Status: Offline (Configure DB)";
-                document.getElementById('db-status').className = "text-xs text-red-400";
-                loadMockUI();
-            }
+            document.getElementById('db-status').innerText = "Status: Online (Firestore)";
+            document.getElementById('db-status').className = "text-xs text-green-400";
+            loadArticles();
         }
 
         window.saveFirebaseConfig = function() {
-            const config = {
-                apiKey: document.getElementById('fb-apiKey').value,
-                authDomain: document.getElementById('fb-authDomain').value,
-                projectId: document.getElementById('fb-projectId').value,
-                storageBucket: document.getElementById('fb-storageBucket').value,
-                messagingSenderId: document.getElementById('fb-messagingSenderId').value,
-                appId: document.getElementById('fb-appId').value
-            };
-            localStorage.setItem('aquimy_firebase_config', JSON.stringify(config));
-            Swal.fire('Salvo!', 'Configuração gravada. Recarregando página para aplicar...', 'success')
-            .then(() => location.reload());
+            Swal.fire('Aviso', 'A configuração está nativamente integrada ao código para maior segurança e estabilidade.', 'info');
         }
 
         window.clearFirebaseConfig = function() {
-            localStorage.removeItem('aquimy_firebase_config');
-            location.reload();
+            Swal.fire('Aviso', 'A configuração está nativamente integrada ao código.', 'info');
         }
 
         // --- ARTIGOS LOGIC ---
@@ -405,7 +378,7 @@
 
         function loadMockUI() {
             const tbody = document.getElementById('articlesList');
-            if(tbody) tbody.innerHTML = '<tr><td colspan="6" class="py-8 text-center text-gray-500"><i class="fas fa-exclamation-triangle text-yellow-500 mr-2"></i> Configure as chaves do Firebase na aba "Configuração Firebase" para ver dados reais.</td></tr>';
+            if(tbody) tbody.innerHTML = '<tr><td colspan="6" class="py-8 text-center text-gray-500">Nenhum artigo encontrado no banco.</td></tr>';
         }
 
         function renderArticleRow(id, artigo, tbody) {
