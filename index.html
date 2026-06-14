@@ -227,6 +227,15 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
 
+        // =====================================================================
+        // 🚀 ÁREA PARA COLOCAR SUAS APIs NO HTML (CONFIGURAÇÕES PRINCIPAIS)
+        // =====================================================================
+        
+        // 1. Coloque sua Chave da IA (OpenRouter) aqui:
+        // Caso esteja dando erro "User not found", coloque a sua nova API Key entre as aspas abaixo:
+        const API_KEY_NO_HTML = "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";
+
+        // 2. Chaves de conexão direta com o banco (Firebase)
         const firebaseConfig = {
             apiKey: "AIzaSyBtcBDbZbzUM6MQH8fg64_I9K0j9Krae8E",
             authDomain: "quimy-f0a19.firebaseapp.com",
@@ -235,11 +244,13 @@
             messagingSenderId: "92172152920",
             appId: "1:92172152920:web:aa72eea4b905eaea099a2d"
         };
+        // =====================================================================
+
         const app = initializeApp(firebaseConfig);
         let db = getFirestore(app);
         window.isFirebaseConnected = true;
         
-        let OPENROUTER_API_KEY = localStorage.getItem("or_api_key") || "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";
+        let OPENROUTER_API_KEY = localStorage.getItem("or_api_key") || API_KEY_NO_HTML;
 
         // Navigation
         window.showSection = function(sectionId) {
